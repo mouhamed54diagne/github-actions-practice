@@ -1,0 +1,23 @@
+{
+  "name": "github-actions-practice",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mouhamed54diagne/github-actions-practice.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mouhamed54diagne/github-actions-practice/issues"
+  },
+  "homepage": "https://github.com/mouhamed54diagne/github-actions-practice#readme",
+  "devDependencies": {
+    "jest": "^30.1.3"
+  }
+}
