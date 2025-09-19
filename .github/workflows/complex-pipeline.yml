@@ -1,0 +1,65 @@
+name: Complex CI/CD Pipeline
+on: 
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Parallel quality checks
+  quality-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        check: [lint, test, security]
+        node-version: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm install
+      - name: Run ${{ matrix.check }} on Node ${{ matrix.node-version }}
+        run: |
+          case "${{ matrix.check }}" in
+            "lint") echo "Running linting..." ;;
+            "test") npm test ;;
+            "security") npm audit --audit-level=moderate ;;
+          esac
+
+  # Build job (parallel with quality checks)
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm install
+      - name: Build
+        run: |
+          mkdir -p dist
+          echo "Application built" > dist/app.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ github.sha }}
+          path: dist/
+
+  # Deploy only after everything passes
+  deploy:
+    needs: [quality-checks, build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production  # Requires manual approval in GitHub
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-${{ github.sha }}
+          path: dist/
+      - name: Deploy
+        run: |
+          echo "🚀 Deploying to production..."
+          ls -la dist/
+          echo "✅ Deployment complete!"
